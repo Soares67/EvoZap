@@ -53,13 +53,11 @@ class EvoBot:
     
     def __auth(self):
         try:
-            print("Tentando localizar elemento de inicialização")
             if self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="pane-side"]'))):
                 self.current_state = "on"
                 self.__del_imgs()
         except Exception:
-            print("Erro ao localizar elemento de inicialização")
-            print(f"Erro ao autenticar")
+            pass
     
     def __reloader(self):
         try:
@@ -84,24 +82,27 @@ class EvoBot:
         try:
             self.__access()
             self.__wait_auth()
-        except Exception as e:
-            print(f"Erro ao iniciar o bot: {e}")
+        except Exception:
+            pass
     
-    def open_unread(self):
-        self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="side"]/div[2]/button[2]'))).click()
-    
-    def update_unreads(self):
+    def open_unreads(self):
+        while not "não lidas" in self.browser.find_element(By.XPATH, '//*[@id="side"]/div[1]/div/div[2]/div[1]').text:
+            self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="side"]/div[2]/button[2]'))).click()
         self.unread_list = self.browser.find_elements(By.CSS_SELECTOR, '.x10l6tqk.xh8yej3.x1g42fcv')
-        self.unreads = len(self.unread_list)
+        self.qty_unreads = len(self.unread_list)
     
-    def last_one(self):
+    def __last_one(self):
         self.unread_list[self.qty_unreads-1].click()
 
+    
 
 bot = EvoBot()
 print(bot.current_state)
 bot.start()
 print(bot.current_state)
+print(bot.qty_unreads)
+bot.open_unreads()
+print(bot.qty_unreads)
 
 # Manter o navegador aberto para depuração
 input(">>> ")
