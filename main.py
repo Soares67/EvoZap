@@ -7,6 +7,7 @@ from selenium.webdriver.edge.service import Service
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from PIL import Image
 import os
+from time import sleep
 from keys import LINK
 
 
@@ -21,7 +22,8 @@ class EvoBot:
         self.current_state = "off"
         self.unread_list = []
         self.qty_unreads = 0
-    
+        self.commands = {"/start": "Hello! Welcome!", "/finish": "Finishing...."}
+
     def __screenshot(self):
         """Take a screenshot from current browser screen
         """
@@ -74,6 +76,7 @@ class EvoBot:
             
             qr = self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div/div[2]/div[3]/div[1]/div/div/div[2]/div/canvas')))
             self.__screenshot()
+            sleep(1)
             self.__get_qr(qr)
             print("Escaneie para continuar...")
             self.__auth()
@@ -85,14 +88,75 @@ class EvoBot:
         except Exception:
             pass
     
+    def refresh_unreads(self):
+        self.unread_list = self.browser.find_elements(By.CSS_SELECTOR, '.x10l6tqk.xh8yej3.x1g42fcv')
+        self.qty_unreads = len(self.unread_list)
+
     def open_unreads(self):
         while not "não lidas" in self.browser.find_element(By.XPATH, '//*[@id="side"]/div[1]/div/div[2]/div[1]').text:
             self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="side"]/div[2]/button[2]'))).click()
-        self.unread_list = self.browser.find_elements(By.CSS_SELECTOR, '.x10l6tqk.xh8yej3.x1g42fcv')
-        self.qty_unreads = len(self.unread_list)
+        self.refresh_unreads()
     
-    def __last_one(self):
+    def __close_chat(self):
+        self.browser.find_element(By.XPATH, '//*[@id="main"]/header/div[3]/div/div[3]/div/div').click()
+        self.browser.find_element(By.XPATH, '//*[@id="app"]/div/span[5]/div/ul/div/div/li[3]/div').click()
+
+    def enter_chat(self):
         self.unread_list[self.qty_unreads-1].click()
+
+        lista_mensagens = self.browser.find_elements(By.CSS_SELECTOR, '[class*="message"]')  # Lista de mensagens da conversa
+        lista_nr = []  # lista de conversas não respondidas
+        last = None
+        for i, mensagem in enumerate(lista_mensagens):
+            if "message-out" in mensagem.get_attribute("class"):
+                last = i  # índice da última mensagem enviada
+
+        try:
+            lista_nr.extend(lista_mensagens[last+1:])  # Lista das mensagens não respondidas (a partir da última mensagem enviada)
+        except:
+            lista_nr = lista_mensagens  # Se não houver mensagens enviadas, mas houver recebidas ela será a própria lista de mensagens
+                
+
+        print(len(lista_nr), "Mensagens não lidas")  # Mensagens não respondidas
+        lista_mensagens = [i.find_element(By.CSS_SELECTOR, '._ao3e.selectable-text.copyable-text').text for i in lista_nr]  # texto das mensagens não respondidas
+
+        msg = "\n".join(lista_mensagens)  # Todas as mensagens não respondidas agrupadas em uma string
+        print(msg)
+
+        res = self.gen_response(msg)
+        self.send_response(res)
+
+        self.__close_chat()
+        sleep(1)
+        self.refresh_unreads()
+
+    def __identify_msgtype(self, message):
+        if message.startswith("/"):
+            return "cmd"
+        else:
+            return "nrml"
+    
+    def gen_response(self, message):
+        if self.__identify_msgtype(message) == "cmd":
+            if message in self.commands.keys():
+                return self.commands[message]
+            else:
+                return "Uknown command."
+        else:
+            return "Hello, World!"
+    
+    def send_response(self, response):
+        actions = webdriver.ActionChains(self.browser)  # ActionChains
+
+        res = response
+
+        res_entry = self.browser.find_element(By.XPATH, '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div[1]/p')  # Entry
+        res_entry.click()
+        actions.key_down(Keys.LEFT_CONTROL).send_keys("a").key_up(Keys.LEFT_CONTROL).perform()  # Seleciona todo o texto do entry
+        actions.send_keys(Keys.BACKSPACE).perform()
+        res_entry.send_keys(res)  # Texto que será enviado
+        self.browser.find_element(By.XPATH, '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[2]/button').click()
+
 
     
 
@@ -100,9 +164,12 @@ bot = EvoBot()
 print(bot.current_state)
 bot.start()
 print(bot.current_state)
+
 print(bot.qty_unreads)
 bot.open_unreads()
 print(bot.qty_unreads)
+
+bot.enter_chat()
 
 # Manter o navegador aberto para depuração
 input(">>> ")
