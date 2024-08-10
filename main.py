@@ -17,7 +17,9 @@ from keys import LINK
 class EvoBot:
     def __init__(self):
         self.service = Service(EdgeChromiumDriverManager().install())
-        self.browser = webdriver.Edge(service=self.service)
+        self.options = webdriver.EdgeOptions()
+        self.options.add_argument("window-size=1871,911")
+        self.browser = webdriver.Edge(service=self.service, options=self.options)
         self.wait = WebDriverWait(self.browser, 20)
         self.current_state = "off"
         self.unread_list = []
@@ -40,7 +42,9 @@ class EvoBot:
         final_x = (start_x + qr_size["width"])
         final_y = (start_y + qr_size["height"])
 
-        qr_img = page.crop((start_x-50, start_y-50, final_x+50, final_y+50))
+        offset = 20
+
+        qr_img = page.crop((start_x-offset, start_y-offset-offset, final_x+offset, final_y+offset))
         qr_img.save("qr.png")
     
     def __del_imgs(self):
@@ -51,7 +55,9 @@ class EvoBot:
             pass
     
     def __access(self):
+        
         self.browser.get(LINK)
+        
     
     def __auth(self):
         try:
@@ -76,7 +82,6 @@ class EvoBot:
             
             qr = self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div/div[2]/div[3]/div[1]/div/div/div[2]/div/canvas')))
             self.__screenshot()
-            sleep(1)
             self.__get_qr(qr)
             print("Escaneie para continuar...")
             self.__auth()
