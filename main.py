@@ -17,9 +17,8 @@ from keys import LINK
 class EvoBot:
     def __init__(self):
         self.service = Service(EdgeChromiumDriverManager().install())
-        self.options = webdriver.EdgeOptions()
-        self.options.add_argument("window-size=1871,911")
-        self.browser = webdriver.Edge(service=self.service, options=self.options)
+        self.browser = webdriver.Edge(service=self.service)
+        self.browser.set_window_size(1051,797)
         self.wait = WebDriverWait(self.browser, 20)
         self.current_state = "off"
         self.unread_list = []
@@ -37,12 +36,12 @@ class EvoBot:
         qr_position = qr.location
         qr_size = qr.size
 
-        start_x = qr_position["x"]
-        start_y = qr_position["y"]
-        final_x = (start_x + qr_size["width"])
+        start_x = qr_position["x"] + 190
+        start_y = qr_position["y"] + 120
+        final_x = ((start_x + qr_size["width"]))
         final_y = (start_y + qr_size["height"])
 
-        offset = 20
+        offset = 50
 
         qr_img = page.crop((start_x-offset, start_y-offset-offset, final_x+offset, final_y+offset))
         qr_img.save("qr.png")
@@ -55,9 +54,7 @@ class EvoBot:
             pass
     
     def __access(self):
-        
-        self.browser.get(LINK)
-        
+        self.browser.get(LINK)  
     
     def __auth(self):
         try:
