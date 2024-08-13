@@ -97,7 +97,6 @@ class EvoBot:
     def open_unreads(self):
         while not "não lidas" in self.browser.find_element(By.XPATH, '//*[@id="side"]/div[1]/div/div[2]/div[1]').text:
             self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="side"]/div[2]/button[2]'))).click()
-        self.refresh_unreads()
     
     def __close_chat(self):
         self.browser.find_element(By.XPATH, '//*[@id="main"]/header/div[3]/div/div[3]/div/div').click()
@@ -171,7 +170,11 @@ print(bot.qty_unreads)
 bot.open_unreads()
 print(bot.qty_unreads)
 
-bot.enter_chat()
+while True:
+    bot.refresh_unreads()
+    if len(bot.unread_list) > 0:
+        bot.enter_chat()
+    sleep(3)
 
 # Manter o navegador aberto para depuração
 input(">>> ")
