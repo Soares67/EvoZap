@@ -117,16 +117,7 @@ class EvoBot:
             return True
         else:
             return False
-    
-    def __link_message(self, elements_list: list, message_index: int):
-        actions = webdriver.ActionChains(self.browser)  # ActionChains
-
-        actions.move_to_element(elements_list[message_index]).perform()
-
-        viewbox = self.browser.find_element(By.XPATH, '//*[@id="main"]/div[3]/div/div[2]/div[3]/div[32]/div/div/div[1]/div[1]/span[2]/div/div/span/svg')
-        for i in viewbox:
-            print(i)
-
+        
     def enter_chat(self):
         self.sleeper()
         self.unread_list[self.qty_unreads-1].click()
@@ -146,27 +137,22 @@ class EvoBot:
 
         print(len(lista_nr), "Mensagens não lidas")  # Mensagens não respondidas
         lista_mensagens = [i.find_element(By.CSS_SELECTOR, '._ao3e.selectable-text.copyable-text').text for i in lista_nr]  # texto das mensagens não respondidas
-        lista_elementos = [i.find_element(By.CSS_SELECTOR, '._ao3e.selectable-text.copyable-text') for i in lista_nr]  # Elementos das mensagens não lidas
 
         if self.__is_spam(lista_mensagens):
-            warn = "Please, don't spam commands."
-            res = self.gen_response(lista_mensagens[0])
-            self.send_response(warn)
-            self.__link_message(lista_elementos, 0)
-            self.send_response(res)
-        else:
-            msg = "\n".join(lista_mensagens)  # Todas as mensagens não respondidas agrupadas em uma string
-            print(msg)
+            res = "Please, don't spam commands."
 
-            res = self.gen_response(msg)
-            self.send_response(res)
+        msg = "\n".join(lista_mensagens)  # Todas as mensagens não respondidas agrupadas em uma string
+        print(msg)
+
+        res = self.gen_response(msg)
+        self.send_response(res)
 
         self.__close_chat()
         self.sleeper()
         self.refresh_unreads()
 
     def __identify_msgtype(self, message):
-        if message.startswith("/"):
+        if message.startswith("/") and message.count("/") == 1:
             return "cmd"
         else:
             return "nrml"
@@ -177,6 +163,8 @@ class EvoBot:
                 return self.commands[message]
             else:
                 return "Uknown command."
+        elif message.count("/") > 1:
+            return "Please, don't spam commands."
         else:
             return "Hello, World!"
     
@@ -210,8 +198,8 @@ while True:
     bot.refresh_unreads()
     if len(bot.unread_list) > 0:
         bot.enter_chat()
-    input(">>>>")
     bot.sleeper()
+
 
 
 
