@@ -10,8 +10,9 @@ import os
 from time import sleep
 from keys import LINK
 import random as rd
-
-
+import google.generativeai as genai
+from keys import GEMINI_API_KEY
+import pyperclip as pc
 
 
 
@@ -26,6 +27,9 @@ class EvoBot:
         self.qty_unreads = 0
         self.sleeper = lambda: sleep(rd.uniform(2.1, 5.2))
         self.commands = {"/start": "Hello! Welcome!", "/finish": "Finishing...."}
+        self.ia = genai.configure(api_key=GEMINI_API_KEY)
+        self.model = genai.GenerativeModel('gemini-1.5-flash')
+        self.chat = self.model.start_chat(history=[])
 
     def __screenshot(self):
         """Take a screenshot from current browser screen
@@ -139,17 +143,24 @@ class EvoBot:
         lista_mensagens = [i.find_element(By.CSS_SELECTOR, '._ao3e.selectable-text.copyable-text').text for i in lista_nr]  # texto das mensagens não respondidas
 
         if self.__is_spam(lista_mensagens):
-            res = "Please, don't spam commands."
+            warn = "Please, don't spam commands."
+            res = self.gen_response(lista_mensagens[0])
+            self.send_response(warn)
+            self.send_response(res)
 
-        msg = "\n".join(lista_mensagens)  # Todas as mensagens não respondidas agrupadas em uma string
-        print(msg)
+            self.__close_chat()
+            self.sleeper()
+            self.refresh_unreads()
+        else:
+            msg = "\n".join(lista_mensagens)  # Todas as mensagens não respondidas agrupadas em uma string
+            print(msg)
 
-        res = self.gen_response(msg)
-        self.send_response(res)
+            res = self.gen_response(msg)
+            self.send_response(res)
 
-        self.__close_chat()
-        self.sleeper()
-        self.refresh_unreads()
+            self.__close_chat()
+            self.sleeper()
+            self.refresh_unreads()
 
     def __identify_msgtype(self, message):
         if message.startswith("/") and message.count("/") == 1:
@@ -166,7 +177,12 @@ class EvoBot:
         elif message.count("/") > 1:
             return "Please, don't spam commands."
         else:
-            return "Hello, World!"
+            try:
+                response = self.chat.send_message(message)
+                res = response.text
+                return res
+            except Exception:
+                return "Mensagem invalidada por questões de segurança e privacidade."
     
     def send_response(self, response):
         actions = webdriver.ActionChains(self.browser)  # ActionChains
@@ -178,7 +194,9 @@ class EvoBot:
         self.sleeper()
         actions.key_down(Keys.LEFT_CONTROL).send_keys("a").key_up(Keys.LEFT_CONTROL).perform()  # Seleciona todo o texto do entry
         actions.send_keys(Keys.BACKSPACE).perform()
-        res_entry.send_keys(res)  # Texto que será enviado
+        pc.copy(res)
+        actions.key_down(Keys.LEFT_CONTROL).send_keys("v").key_up(Keys.LEFT_CONTROL).perform()
+        # res_entry.send_keys(res)  # Texto que será enviado
         self.sleeper()
         self.browser.find_element(By.XPATH, '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[2]/button').click()
 
