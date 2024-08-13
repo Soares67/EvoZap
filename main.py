@@ -9,6 +9,7 @@ from PIL import Image
 import os
 from time import sleep
 from keys import LINK
+import random as rd
 
 
 
@@ -23,6 +24,7 @@ class EvoBot:
         self.current_state = "off"
         self.unread_list = []
         self.qty_unreads = 0
+        self.sleeper = lambda: sleep(rd.uniform(2.1, 5.2))
         self.commands = {"/start": "Hello! Welcome!", "/finish": "Finishing...."}
 
     def __screenshot(self):
@@ -91,18 +93,22 @@ class EvoBot:
             pass
     
     def refresh_unreads(self):
+        self.sleeper()
         self.unread_list = self.browser.find_elements(By.CSS_SELECTOR, '.x10l6tqk.xh8yej3.x1g42fcv')
         self.qty_unreads = len(self.unread_list)
 
     def open_unreads(self):
+        self.sleeper()
         while not "não lidas" in self.browser.find_element(By.XPATH, '//*[@id="side"]/div[1]/div/div[2]/div[1]').text:
             self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="side"]/div[2]/button[2]'))).click()
     
     def __close_chat(self):
+        self.sleeper()
         self.browser.find_element(By.XPATH, '//*[@id="main"]/header/div[3]/div/div[3]/div/div').click()
         self.browser.find_element(By.XPATH, '//*[@id="app"]/div/span[5]/div/ul/div/div/li[3]/div').click()
 
     def enter_chat(self):
+        self.sleeper()
         self.unread_list[self.qty_unreads-1].click()
 
         lista_mensagens = self.browser.find_elements(By.CSS_SELECTOR, '[class*="message"]')  # Lista de mensagens da conversa
@@ -128,7 +134,7 @@ class EvoBot:
         self.send_response(res)
 
         self.__close_chat()
-        sleep(1)
+        self.sleeper()
         self.refresh_unreads()
 
     def __identify_msgtype(self, message):
@@ -153,9 +159,11 @@ class EvoBot:
 
         res_entry = self.browser.find_element(By.XPATH, '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div[1]/p')  # Entry
         res_entry.click()
+        self.sleeper()
         actions.key_down(Keys.LEFT_CONTROL).send_keys("a").key_up(Keys.LEFT_CONTROL).perform()  # Seleciona todo o texto do entry
         actions.send_keys(Keys.BACKSPACE).perform()
         res_entry.send_keys(res)  # Texto que será enviado
+        self.sleeper()
         self.browser.find_element(By.XPATH, '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[2]/button').click()
 
 
@@ -174,10 +182,8 @@ while True:
     bot.refresh_unreads()
     if len(bot.unread_list) > 0:
         bot.enter_chat()
-    sleep(3)
+    bot.sleeper()
 
-# Manter o navegador aberto para depuração
-input(">>> ")
 
 
 
