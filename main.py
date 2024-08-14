@@ -107,10 +107,15 @@ class EvoBot:
             self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="side"]/div[2]/button[2]'))).click()
     
     def __close_chat(self):
-        self.sleeper()
-        self.browser.find_element(By.XPATH, '//*[@id="main"]/header/div[3]/div/div[3]/div/div').click()
-        self.sleeper()
-        self.browser.find_element(By.XPATH, '//*[@id="app"]/div/span[5]/div/ul/div/div/li[3]/div').click()
+        try:
+            self.browser.find_element(By.XPATH, '//*[@id="main"]/header/div[3]/div/div[3]/div/div').click()
+            self.sleeper()
+            self.browser.find_element(By.XPATH, '//*[@id="app"]/div/span[5]/div/ul/div/div/li[3]/div').click()
+        except:
+            self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div/span[2]/div/div/div/div/div/div/div/div[4]/button'))).click()
+            self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/header/div[3]/div/div[3]/div/div'))).click()
+            self.sleeper()
+            self.browser.find_element(By.XPATH, '//*[@id="app"]/div/span[5]/div/ul/div/div/li[3]/div').click()
 
     def __is_spam(self, message_list: list):
         count = 0
