@@ -108,6 +108,7 @@ class EvoBot:
     
     def __close_chat(self):
         try:
+            self.sleeper()
             self.browser.find_element(By.XPATH, '//*[@id="main"]/header/div[3]/div/div[3]/div/div').click()
             self.sleeper()
             self.browser.find_element(By.XPATH, '//*[@id="app"]/div/span[5]/div/ul/div/div/li[3]/div').click()
