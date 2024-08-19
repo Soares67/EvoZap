@@ -14,7 +14,7 @@ import google.generativeai as genai
 from keys import GEMINI_API_KEY
 import pyperclip as pc
 
-
+#
 
 class EvoBot:
     def __init__(self):
@@ -83,6 +83,9 @@ class EvoBot:
     
     def __reloader(self):
         """Identifies if QR has expired and reload
+
+        Returns:
+            bool
         """
         try:
             if self.browser.find_element(By.XPATH, '//*[@id="app"]/div/div[2]/div[3]/div[1]/div/div/div[2]/div/span/button'):
@@ -143,6 +146,12 @@ class EvoBot:
 
     def __is_spam(self, message_list: list):
         """Identifies commands spam
+
+        Args:
+            message_list (list): List with the text of unread messages from current chat
+        
+        Returns:
+            bool
         """
         count = 0
         for message in message_list:
@@ -154,6 +163,8 @@ class EvoBot:
             return False
         
     def enter_chat(self):
+        """Do the entire process of collecting and responding messages from the current chat
+        """
         self.sleeper()
         self.unread_list[self.qty_unreads-1].click()
 
@@ -194,12 +205,28 @@ class EvoBot:
             self.refresh_unreads()
 
     def __identify_msgtype(self, message):
+        """Identifies message type
+
+        Args:
+            message (str): The received message
+
+        Returns:
+            Message type
+        """
         if message.startswith("/") and message.count("/") == 1:
             return "cmd"
         else:
             return "nrml"
     
     def gen_response(self, message):
+        """Generates the response to the received message
+
+        Args:
+            message (str): The received message
+        
+        Returns:
+            Message response
+        """
         if self.__identify_msgtype(message) == "cmd":
             if message in self.commands.keys():
                 return self.commands[message]
@@ -216,6 +243,11 @@ class EvoBot:
                 return "Mensagem invalidada por questões de segurança e privacidade."
     
     def send_response(self, response):
+        """Send the response in the chat
+
+        Args:
+            response (str): Response to be sent
+        """
         actions = webdriver.ActionChains(self.browser)  # ActionChains
 
         res = response
