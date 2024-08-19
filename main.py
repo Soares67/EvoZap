@@ -37,6 +37,11 @@ class EvoBot:
         self.browser.save_screenshot("page.png")
     
     def __get_qr(self, qr):
+        """Crop and save qr image
+
+        Args:
+            qr (webelement): QR Code element        
+        """
         page = Image.open("page.png")
 
         qr_position = qr.location
@@ -53,6 +58,8 @@ class EvoBot:
         qr_img.save("qr.png")
     
     def __del_imgs(self):
+        """Delete screenshots
+        """
         try:
             os.remove("qr.png")
             os.remove("page.png")
@@ -60,9 +67,13 @@ class EvoBot:
             pass
     
     def __access(self):
+        """Open the link
+        """
         self.browser.get(LINK)  
     
     def __auth(self):
+        """Initializes the bot if QR is scanned
+        """
         try:
             if self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="pane-side"]'))):
                 self.current_state = "on"
@@ -71,6 +82,8 @@ class EvoBot:
             pass
     
     def __reloader(self):
+        """Identifies if QR has expired and reload
+        """
         try:
             if self.browser.find_element(By.XPATH, '//*[@id="app"]/div/div[2]/div[3]/div[1]/div/div/div[2]/div/span/button'):
                 return True
@@ -78,6 +91,8 @@ class EvoBot:
             return False
 
     def __wait_auth(self):
+        """Does the entire bot startup process
+        """
         while self.current_state == "off":
             self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div/div[2]/div[3]/div[1]/div/div/div[2]/div/canvas')))
             if self.__reloader():
@@ -90,6 +105,8 @@ class EvoBot:
             self.__auth()
     
     def start(self):
+        """Start the bot
+        """
         try:
             self.__access()
             self.__wait_auth()
@@ -97,16 +114,22 @@ class EvoBot:
             pass
     
     def refresh_unreads(self):
+        """Updates the list and number of unread chats
+        """
         self.sleeper()
         self.unread_list = self.browser.find_elements(By.CSS_SELECTOR, '.x10l6tqk.xh8yej3.x1g42fcv')
         self.qty_unreads = len(self.unread_list)
 
     def open_unreads(self):
+        """Open the unread tab
+        """
         self.sleeper()
         while not "não lidas" in self.browser.find_element(By.XPATH, '//*[@id="side"]/div[1]/div/div[2]/div[1]').text:
             self.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="side"]/div[2]/button[2]'))).click()
     
     def __close_chat(self):
+        """Closes the current chat
+        """
         try:
             self.sleeper()
             self.browser.find_element(By.XPATH, '//*[@id="main"]/header/div[3]/div/div[3]/div/div').click()
@@ -119,6 +142,8 @@ class EvoBot:
             self.browser.find_element(By.XPATH, '//*[@id="app"]/div/span[5]/div/ul/div/div/li[3]/div').click()
 
     def __is_spam(self, message_list: list):
+        """Identifies commands spam
+        """
         count = 0
         for message in message_list:
             if message.startswith("/"):
