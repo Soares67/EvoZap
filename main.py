@@ -252,7 +252,7 @@ class EvoBot:
 
         res = response
 
-        res_entry = self.browser.find_element(By.XPATH, '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div[1]/p')  # Entry
+        res_entry = self.browser.find_element(By.XPATH, '//*[@id="main"]/footer/div[1]/div/span/div/div[2]/div[1]/div/div[1]/p')  # Entry
         res_entry.click()
         self.sleeper()
         actions.key_down(Keys.LEFT_CONTROL).send_keys("a").key_up(Keys.LEFT_CONTROL).perform()  # Seleciona todo o texto do entry
@@ -261,7 +261,7 @@ class EvoBot:
         actions.key_down(Keys.LEFT_CONTROL).send_keys("v").key_up(Keys.LEFT_CONTROL).perform()
         # res_entry.send_keys(res)  # Texto que será enviado
         self.sleeper()
-        self.browser.find_element(By.XPATH, '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[2]/button').click()
+        self.browser.find_element(By.XPATH, '//*[@id="main"]/footer/div[1]/div/span/div/div[2]/div[2]/button').click()
 
 
     
